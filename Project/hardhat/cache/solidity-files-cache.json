@@ -1,0 +1,41 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/sneha/Blockchain/CrowdMint_Project/Project/hardhat/contracts/CrowdMint.sol": {
+      "lastModificationDate": 1726817305993,
+      "contentHash": "1843ac2cd44658ec8a9ce7a5b5798f55",
+      "sourceName": "contracts/CrowdMint.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "CrowdMint"
+      ]
+    }
+  }
+}

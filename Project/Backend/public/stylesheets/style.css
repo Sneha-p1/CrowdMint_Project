@@ -1,0 +1,33 @@
+#statusbar {
+    background: #333;
+    border-radius: 13px;
+    height: 20px;
+    width: 300px;
+    padding: 3px;
+}
+
+#statusbar:after {
+    content: '';
+    display: block;
+    background: rgb(52, 214, 19);
+    width: 40%;
+    height: 100%;
+    border-radius: 9px;
+}
+
+#progressbar {
+    background: #333;
+    border-radius: 13px;
+    height: 10px;
+    width: 100px;
+    padding: 3px;
+}
+
+#progressbar:after {
+    content: '';
+    display: block;
+    background: rgb(52, 214, 19);
+    width: 40%;
+    height: 100%;
+    border-radius: 9px;
+}
