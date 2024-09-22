@@ -5,23 +5,19 @@ import { Link } from 'react-router-dom';
 
 const UserNav = () => {
   return (
-    <div className="bg-gray-800 p-4 h-16 shadow-lg flex items-center justify-between px-6">
-      {/* Logo and Branding */}
-      <div className="flex items-center">
+    <div className="bg-gray-900 p-4 shadow-lg flex flex-col md:flex-row items-center justify-between px-6">
+    
+      <div className="flex items-center mb-4 md:mb-0">
         <Link to="/dashboard">
-          <img src={img} alt="CrowdMint Logo" className="h-12 w-12" />
+          <img src={img} alt="CrowdMint Logo" className="h-12 w-28 md:h-14 md:w-32" />
         </Link>
-        <span className="ml-3 text-white text-2xl font-semibold">CrowdMint</span>
       </div>
 
-      {/* Navigation Links */}
-      <nav className="flex space-x-8 items-center text-white">
-        <Link to="/projects" className="hover:text-gray-200 transition-colors duration-300">
+   
+      <nav className="flex flex-col md:flex-row md:space-x-8 items-center text-white">
+        <Link to="/projects" className="mb-2 md:mb-0 hover:text-gray-200 transition-colors duration-300">
           View Projects
         </Link>
-        {/* <Link to="/new-project" className="hover:text-gray-200 transition-colors duration-300">
-          Create Project
-        </Link> */}
         <Logout />
       </nav>
     </div>

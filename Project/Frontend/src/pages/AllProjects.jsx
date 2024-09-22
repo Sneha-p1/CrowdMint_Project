@@ -1,20 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { ethers, BrowserProvider } from 'ethers';
+import { useNavigate } from 'react-router-dom';
 import CrowdMint from "/src/scdata/CrowdMint.json";
-import { Link } from 'react-router-dom';
+import { CrowdMintCrowd } from "/src/scdata/deployed_addresses.json"; 
+import { toast } from 'react-toastify'; 
 
 const AllProjects = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [connectedWalletAddress, setConnectedWalletAddress] = useState('');
+  const navigate = useNavigate();
 
-  const provider = new ethers.BrowserProvider(window.ethereum);
-  const contractAddress = '0xd3f5A8D1bC421c38F2EBD4f03C0fCD245797e911'; // Replace with your contract's address
-
+  // Fetch the connected wallet address
   useEffect(() => {
+    const fetchWalletAddress = async () => {
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await provider.send("eth_requestAccounts", []);
+        setConnectedWalletAddress(accounts[0]); // Store the connected address
+      } catch (error) {
+        console.error("Error fetching wallet address:", error);
+      }
+    };
+
+    // Fetch projects data from the smart contract
     const fetchProjects = async () => {
       try {
-        const contract = new ethers.Contract(contractAddress, CrowdMint.abi, provider);
-        const projectsData = await contract.getProjects();
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const contract = new ethers.Contract(CrowdMintCrowd, CrowdMint.abi, provider);
+        const projectsData = await contract.getProjects(); // Fetch projects from the contract
 
         const formattedProjects = projectsData.map((project, index) => ({
           id: index,
@@ -23,6 +37,7 @@ const AllProjects = () => {
           goal: ethers.formatEther(project.goal),
           fundsRaised: ethers.formatEther(project.fundsRaised),
           creator: project.creator,
+          isCompleted: project.isCompleted
         }));
 
         setProjects(formattedProjects);
@@ -33,8 +48,27 @@ const AllProjects = () => {
       }
     };
 
+    fetchWalletAddress();
     fetchProjects();
   }, []);
+
+
+const handleDonateClick = (project) => {
+  const normalizedWalletAddress = connectedWalletAddress.toLowerCase();
+  const normalizedCreatorAddress = project.creator.toLowerCase();
+
+  if (normalizedWalletAddress === normalizedCreatorAddress) {
+    // Show error toast if project creator tries to donate to their own project
+    toast.error("Project creator cannot donate to their own project");
+  } else if (project.isCompleted) {
+    // If project has reached its goal, show a toast notification
+    toast.warning("Project has already reached its goal");
+  } else {
+    // Redirect to the donate page if the user is not the creator and project is still active
+    navigate(`/donate/${project.id}`);
+  }
+};
+
 
   if (loading) {
     return (
@@ -48,26 +82,23 @@ const AllProjects = () => {
     <div className="max-w-6xl mx-auto p-4">
       <h1 className="text-4xl font-bold text-center mb-8">All Projects</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.length === 0 ? (
-          <div className="col-span-1 text-center">
-            <p className="text-lg">No projects found.</p>
+        {projects.map((project) => (
+          <div key={project.id} className="bg-white shadow-md rounded-lg p-6">
+            <h2 className="text-2xl font-semibold">{project.title}</h2>
+            <p className="text-gray-600 mt-2">{project.description}</p>
+            <p className="text-gray-600 mt-2">Goal: {project.goal} ETH</p>
+            <p className="text-gray-600 mt-2">Funds Raised: {project.fundsRaised} ETH</p>
+            <p className="text-gray-600 mt-2">Creator: {project.creator}</p>
+            <p className="text-gray-600 mt-2">Status: {project.isCompleted ? 'Goal Reached' : 'Ongoing'}</p>
+            
+            <button
+              onClick={() => handleDonateClick(project)}
+              className="mt-4 inline-block bg-indigo-600 text-white py-2 px-4 rounded-lg"
+            >
+              Donate
+            </button>
           </div>
-        ) : (
-          projects.map(project => (
-            <div key={project.id} className="border rounded-lg shadow-lg bg-white p-6 hover:shadow-xl transition-shadow duration-300">
-              <h2 className="text-xl font-bold text-green-600 mb-2">{project.title}</h2>
-              <p className="text-gray-700 mb-4">{project.description}</p>
-              <p className="text-gray-600"><strong>Goal:</strong> {project.goal} ETH</p>
-              <p className="text-gray-600"><strong>Funds Raised:</strong> {project.fundsRaised} ETH</p>
-              <p className="text-gray-600 truncate" title={project.creator}><strong>Creator:</strong> {project.creator}</p>
-              <Link to={`/donate/${project.id}`}>
-                <button className="w-full mt-4 border-2 bg-green-300 p-2 rounded-lg drop-shadow-lg hover:bg-green-500">
-                  Donate
-                </button>
-              </Link>
-            </div>
-          ))
-        )}
+        ))}
       </div>
     </div>
   );

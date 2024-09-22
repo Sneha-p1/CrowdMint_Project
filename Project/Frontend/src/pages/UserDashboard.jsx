@@ -1,102 +1,143 @@
-import React, { useEffect, useState } from "react";
-import UserNav from "../components/UserNav";
-import { ethers, BrowserProvider } from "ethers";
-import Fundraise from './Fundraise';
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
+import CrowdMint from '/src/scdata/CrowdMint.json';
+import { CrowdMintCrowd } from '/src/scdata/deployed_addresses.json';
+import UserNav from '../components/UserNav';
 
 const UserDashboard = () => {
-  const [user, setUser] = useState({ address: "", balance: "", projects: [], totalPledged: 0 });
-  const [signer, setSigner] = useState(null); // Add signer state
-  const [currentProject, setCurrentProject] = useState(null);
+  const [userAddress, setUserAddress] = useState('');
+  const [projectData, setProjectData] = useState({
+    title: '',
+    description: '',
+    goal: ''
+  });
+  const [isConnected, setIsConnected] = useState(false);
 
-
-  const navigate = useNavigate(); // To navigate between pages
-
-
-  const provider = new ethers.BrowserProvider(window.ethereum);
-
-  async function connectToMetamask() {
+  // MetaMask connection function
+  const connectWallet = async () => {
     try {
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const account = accounts[0];
-      const signer = await provider.getSigner();
-      setSigner(signer); // Set the signer
-      console.log("Signer address:", signer.address);
-      const balance = await provider.getBalance(account);
-      const balanceInEther = ethers.formatEther(balance);
-      setUser({
-        address: account,
-        balance: balanceInEther,
-      });
+      if (window.ethereum) {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await provider.send("eth_requestAccounts", []);
+        setUserAddress(accounts[0]);
+        setIsConnected(true);
+      } else {
+        alert('Please install MetaMask');
+      }
     } catch (error) {
       console.error("Error connecting to MetaMask:", error);
     }
-  }
+  };
 
+  // Handles form input changes
+  const handleInputChange = (e) => {
+    setProjectData({
+      ...projectData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-  // Fetch user data (projects and totalPledged)
+  // Submits project to the smart contract
+  const handleCreateProject = async (e) => {
+    e.preventDefault();
+    if (!isConnected) {
+      alert('Please connect to MetaMask');
+      return;
+    }
+
+    const { title, description, goal } = projectData;
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(CrowdMintCrowd, CrowdMint.abi, signer);
+      
+      const formattedGoal = ethers.parseEther(goal);  // Convert goal to Wei
+
+      const tx = await contract.createProject(title, description, formattedGoal);
+      await tx.wait();
+      
+      alert('Project created successfully!');
+      setProjectData({
+        title: '',
+        description: '',
+        goal: ''
+      });
+    } catch (error) {
+      console.error("Error creating project:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchUserProjects = async () => {
-      try {
-        const response = await fetch("/api/dashboard", {
-          method: "GET",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUser((prevUser) => ({
-            ...prevUser,
-            projects: data.projects,
-            totalPledged: data.totalPledged,
-          }));
-        } else {
-          console.error("Failed to fetch user data");
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
-
-    fetchUserProjects();
+    if (window.ethereum && window.ethereum.selectedAddress) {
+      setUserAddress(window.ethereum.selectedAddress);
+      setIsConnected(true);
+    }
   }, []);
 
   return (
     <>
       <UserNav />
-      <button
-        type="submit"
-        className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300 mt-5 ml-4"
-        onClick={connectToMetamask}
-      >
-        Connect to MetaMask
-      </button>
+      <div className="max-w-3xl mx-auto p-4 md:p-8">
+        <h1 className="text-2xl md:text-3xl font-bold mb-4">User Dashboard</h1>
 
-      <div className="mt-[40px] mx-4 my-4 h-screen">
-        <h1 className="text-3xl">Account Details</h1>
-        <div className="mt-4">
-          <h2>Account Address</h2>
-          <span id="address" className="font-bold text-xl">
-            {user.address ? user.address : "Not Connected"}
-          </span>
-        </div>
-        <div className="mt-4">
-          <h2>Account Balance</h2>
-          <span id="balance" className="font-bold text-xl">
-            {user.balance ? `${user.balance} ETH` : "Not Connected"}
-          </span>
-        </div>
+        {!isConnected ? (
+          <button 
+            className="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 w-full md:w-auto" 
+            onClick={connectWallet}
+          >
+            Connect MetaMask
+          </button>
+        ) : (
+          <div>
+            <p className="text-gray-600 mb-4 truncate">Connected Wallet Address: {userAddress}</p>
 
-        {/* Pass the signer to Fundraise */}
-        {signer && <Fundraise signer={signer} />}
-{/* 
-        Donation failed: contract runner does not support sending transactions (operation="sendTransaction", code=UNSUPPORTED_OPERATION, version=6.13.2) */}
+            <form onSubmit={handleCreateProject} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Project Title</label>
+                <input 
+                  type="text" 
+                  name="title" 
+                  value={projectData.title}
+                  onChange={handleInputChange}
+                  required
+                  className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+                />
+              </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <textarea 
+                  name="description" 
+                  value={projectData.description}
+                  onChange={handleInputChange}
+                  required
+                  className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+                />
+              </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Goal (in ETH)</label>
+                <input 
+                  type="number" 
+                  name="goal" 
+                  value={projectData.goal}
+                  onChange={handleInputChange}
+                  required
+                  className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+                  step="any"
+                />
+              </div>
 
-
-
-
+              <button 
+                type="submit" 
+                className="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 w-full md:w-auto"
+              >
+                Create Project
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </>
   );

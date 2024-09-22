@@ -1,123 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ethers } from 'ethers';
-import CrowdMint from '/src/scdata/CrowdMint.json';
-import { toast } from 'react-toastify';
+import React, { useState } from 'react';
+import { ethers } from 'ethers'; // You don't need to import BrowserProvider separately
+import CrowdMint from '/src/scdata/CrowdMint.json'; // ABI of your contract
+import { CrowdMintCrowd } from '/src/scdata/deployed_addresses.json'; // Deployed contract address
+import { toast } from 'react-toastify'; // Notification library
+import { useParams } from 'react-router-dom';
 
 const Donate = () => {
-  const [title, setTitle] = useState('');
-  const [amount, setAmount] = useState('');
-  const [signer, setSigner] = useState(null); // State to hold the signer
-  const { id } = useParams(); // Project ID from URL
-  const navigate = useNavigate();
+  const { projectId } = useParams(); // Get the project ID from the URL
+  const [amount, setAmount] = useState(''); // Assuming amount is in Ether
+  const [loading, setLoading] = useState(false);
 
-  const contractAddress = '0xd3f5A8D1bC421c38F2EBD4f03C0fCD245797e911'; // Your contract address
-
-  // Connect to MetaMask
-  const connectToMetamask = async () => {
+  const donateToProject = async () => {
     try {
+      setLoading(true);
+      console.log(projectId);
+
       const provider = new ethers.BrowserProvider(window.ethereum);
-      await provider.send("eth_requestAccounts", []); // Request wallet connection
-      const signerInstance = await provider.getSigner(); // Get the signer
-      setSigner(signerInstance); // Set the signer in the state
-      toast.success('Wallet connected successfully');
-      console.log("Connected signer address:", await signerInstance.getAddress());
-    } catch (error) {
-      console.error("Failed to connect MetaMask:", error);
-      toast.error('MetaMask connection failed');
-    }
-  };
+      await provider.send("eth_requestAccounts", []); // Request MetaMask connection if not already connected
+      const signer = await provider.getSigner(); // Get the signer (user's wallet)
+      
+      // Initialize the contract
+      const contract = new ethers.Contract(CrowdMintCrowd, CrowdMint.abi, signer);
 
-  // Fetch the project title when component mounts
-  useEffect(() => {
-    const fetchTitle = async () => {
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum); // Provider for reading data
-        const contract = new ethers.Contract(contractAddress, CrowdMint.abi, provider);
-        const projects = await contract.getProjects();
-        const project = projects[id];
-        setTitle(project.title); // Set the project title
-      } catch (error) {
-        console.error('Error fetching project:', error);
-      }
-    };
-    
-    fetchTitle();
-  }, [id]);
+      // Call the smart contract function to donate to the project
+      const tx = await contract.donateToProject(projectId, {
+        value: amount, // Pass the Wei-converted amount
+      });
 
-  const submitDonation = async (e) => {
-    e.preventDefault();
-
-    // Check if the signer is available (wallet connected)
-    if (!signer) {
-      toast.error('Please connect your wallet');
-      return;
-    }
-
-    try {
-      // Instantiate contract with the signer to send a transaction
-      const contract = new ethers.Contract(contractAddress, CrowdMint.abi, signer);
-
-      // Convert the donation amount to Wei (smallest unit of ETH)
-      const weiAmount = ethers.parseEther(amount);
-
-      // Send the donation transaction
-      const tx = await contract.donateToProject(id, { value: weiAmount });
-      await tx.wait(); // Wait for transaction to be confirmed
+      await tx.wait(); // Wait for the transaction to be confirmed
 
       toast.success('Donation successful!');
-
-      // Redirect to the "all projects" page or show a confirmation
-      navigate('/projects');
     } catch (error) {
       console.error('Donation failed:', error);
-      toast.error('Donation failed: ' + error.message);
+      toast.error('Donation failed! Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="h-screen">
-      <form onSubmit={submitDonation}>
-        {/* Wallet Connect Button */}
-        {!signer && (
-          <button type="button" onClick={connectToMetamask} className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300 mt-4 ml-10">
-            Connect Wallet
-          </button>
-        )}
-
-        <div className="mt-6">
-          <h1 className="text-3xl text-center font-semibold">Donate to the Project</h1>
-          <div className="w-[700px] rounded-2xl shadow-2xl shadow-stone-950 mx-auto mt-6 p-4">
-            <div className="mt-4">
-              <label className="text-xl font-medium">Project Title</label>
-              <p id="title" className="border rounded w-full py-2 px-3 mb-2">{title}</p>
-            </div>
-
-            <div className="mt-4">
-              <label className="text-xl font-medium">Donation Amount (in ETH)</label>
-              <input
-                type="text"
-                id="amount"
-                name="amount"
-                className="border rounded w-full py-2 px-3 mb-2"
-                placeholder="Enter your donation amount"
-                required
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="w-[200px] mx-auto">
-          <button
-            type="submit"
-            className="w-[200px] bg-green-300 p-2 rounded-lg mt-[30px] hover:bg-green-500"
-          >
-            Donate
-          </button>
-        </div>
-      </form>
+    <div className="max-w-md mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Donate to Project {projectId}</h1>
+      <input
+        type="text"
+        placeholder="Enter donation amount in Ether"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        className="block w-full p-2 border rounded mb-4"
+      />
+      <button
+        onClick={donateToProject}
+        className={`bg-blue-500 text-white py-2 px-4 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        disabled={loading}
+      >
+        {loading ? 'Processing...' : 'Donate'}
+      </button>
     </div>
   );
 };
