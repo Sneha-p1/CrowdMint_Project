@@ -70,5 +70,5 @@ Should you have ideas to enhance this, kindly fork the repository and initiate a
 
 ## 📜 License
 
-This project is licensed under the MIT license - see the [LICENSE.md](https://github.com/Sneha-p1/Certificate_DApp/blob/main/License) file for details.
+This project is licensed under the MIT license - see the [LICENSE.md](https://github.com/Sneha-p1/CrowdMint_Project/blob/main/Project/License) file for details.
 
