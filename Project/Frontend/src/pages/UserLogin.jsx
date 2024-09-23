@@ -32,7 +32,7 @@ const UserLogin = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-200">
+    <div className="flex min-h-screen bg-gradient-to-r from-indigo-500 via-purple-300 to-pink-200">
       <div className="w-1/4 bg-gray-600 h-screen shadow-xl flex items-center justify-center">
         <div className="text-white text-2xl font-semibold text-center">
           Welcome back

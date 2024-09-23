@@ -79,63 +79,66 @@ const UserDashboard = () => {
     <>
       <UserNav />
       <div className="max-w-3xl mx-auto p-4 md:p-8">
-        <h1 className="text-2xl md:text-3xl font-bold mb-4">User Dashboard</h1>
-
         {!isConnected ? (
           <button 
-            className="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 w-full md:w-auto" 
+            className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 ease-in-out transform 
+            hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300 w-full md:w-1/2 mx-auto mt-20"
             onClick={connectWallet}
           >
             Connect MetaMask
           </button>
         ) : (
           <div>
-            <p className="text-gray-600 mb-4 truncate">Connected Wallet Address: {userAddress}</p>
+            <p className="text-gray-600 text-lg mb-4 truncate text-center md:text-left">Connected Wallet Address: {userAddress}</p>
+              
+            <div className='max-w-lg mx-auto bg-white shadow-md rounded-lg p-6'>
+              <p className="text-3xl font-extrabold text-gray-800 mb-6 text-center">Create Project</p>
 
-            <form onSubmit={handleCreateProject} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Project Title</label>
-                <input 
-                  type="text" 
-                  name="title" 
-                  value={projectData.title}
-                  onChange={handleInputChange}
-                  required
-                  className="mt-1 p-2 border border-gray-300 rounded-md w-full"
-                />
-              </div>
+              <form onSubmit={handleCreateProject} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Project Title</label>
+                  <input 
+                    type="text" 
+                    name="title" 
+                    value={projectData.title}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-2 p-3 border border-gray-300 rounded-lg w-full focus:border-indigo-500 focus:ring-indigo-500 transition duration-200"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Description</label>
-                <textarea 
-                  name="description" 
-                  value={projectData.description}
-                  onChange={handleInputChange}
-                  required
-                  className="mt-1 p-2 border border-gray-300 rounded-md w-full"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Description</label>
+                  <textarea 
+                    name="description" 
+                    value={projectData.description}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-2 p-3 border border-gray-300 rounded-lg w-full focus:border-indigo-500 focus:ring-indigo-500 transition duration-200"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Goal (in ETH)</label>
-                <input 
-                  type="number" 
-                  name="goal" 
-                  value={projectData.goal}
-                  onChange={handleInputChange}
-                  required
-                  className="mt-1 p-2 border border-gray-300 rounded-md w-full"
-                  step="any"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Goal (in ETH)</label>
+                  <input 
+                    type="number" 
+                    name="goal" 
+                    value={projectData.goal}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-2 p-3 border border-gray-300 rounded-lg w-full focus:border-indigo-500 focus:ring-indigo-500 transition duration-200"
+                    step="any"
+                  />
+                </div>
 
-              <button 
-                type="submit" 
-                className="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 w-full md:w-auto"
-              >
-                Create Project
-              </button>
-            </form>
+                <button 
+                  type="submit" 
+                  className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300 w-full"
+                >
+                  Create Project
+                </button>
+              </form>
+            </div>
           </div>
         )}
       </div>

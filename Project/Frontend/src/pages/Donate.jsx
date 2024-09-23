@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { ethers } from 'ethers'; // You don't need to import BrowserProvider separately
-import CrowdMint from '/src/scdata/CrowdMint.json'; // ABI of your contract
-import { CrowdMintCrowd } from '/src/scdata/deployed_addresses.json'; // Deployed contract address
-import { toast } from 'react-toastify'; // Notification library
+import { ethers } from 'ethers'; 
+import CrowdMint from '/src/scdata/CrowdMint.json'; 
+import { CrowdMintCrowd } from '/src/scdata/deployed_addresses.json'; 
+import { toast } from 'react-toastify'; 
 import { useParams } from 'react-router-dom';
+import AllpNav from '../components/AllpNav';
 
 const Donate = () => {
-  const { projectId } = useParams(); // Get the project ID from the URL
-  const [amount, setAmount] = useState(''); // Assuming amount is in Ether
+  const { projectId } = useParams(); 
+  const [amount, setAmount] = useState(''); 
   const [loading, setLoading] = useState(false);
 
   const donateToProject = async () => {
@@ -16,18 +17,16 @@ const Donate = () => {
       console.log(projectId);
 
       const provider = new ethers.BrowserProvider(window.ethereum);
-      await provider.send("eth_requestAccounts", []); // Request MetaMask connection if not already connected
-      const signer = await provider.getSigner(); // Get the signer (user's wallet)
-      
-      // Initialize the contract
+      await provider.send("eth_requestAccounts", []); 
+      const signer = await provider.getSigner(); 
+
       const contract = new ethers.Contract(CrowdMintCrowd, CrowdMint.abi, signer);
 
-      // Call the smart contract function to donate to the project
       const tx = await contract.donateToProject(projectId, {
-        value: amount, // Pass the Wei-converted amount
+        value: ethers.parseEther(amount), 
       });
 
-      await tx.wait(); // Wait for the transaction to be confirmed
+      await tx.wait(); 
 
       toast.success('Donation successful!');
     } catch (error) {
@@ -39,23 +38,31 @@ const Donate = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Donate to Project {projectId}</h1>
-      <input
-        type="text"
-        placeholder="Enter donation amount in Ether"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        className="block w-full p-2 border rounded mb-4"
-      />
-      <button
-        onClick={donateToProject}
-        className={`bg-blue-500 text-white py-2 px-4 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-        disabled={loading}
-      >
-        {loading ? 'Processing...' : 'Donate'}
-      </button>
-    </div>
+    <>
+      <AllpNav />
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <div className="bg-white shadow-lg rounded-lg p-6 max-w-lg w-full">
+          <h1 className="text-3xl font-bold text-center mb-6">Donate to Project {projectId}</h1>
+          <p className="text-gray-600 text-center mb-4">
+            Enter the amount you would like to donate to this project in Ether.
+          </p>
+          <input
+            type="text"
+            placeholder="Enter donation amount in Ether"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="block w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
+          />
+          <button
+            onClick={donateToProject}
+            className={`w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 transition-colors duration-300 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={loading}
+          >
+            {loading ? 'Processing...' : 'Donate'}
+          </button>
+        </div>
+      </div>
+    </>
   );
 };
 
