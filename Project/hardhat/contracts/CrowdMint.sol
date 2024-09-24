@@ -5,7 +5,7 @@ contract CrowdMint {
     address public admin;
 
     struct Project {
-        string title;
+        string title; 
         string description;
         uint256 goal;
         uint256 fundsRaised;
