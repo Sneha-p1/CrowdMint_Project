@@ -44,7 +44,6 @@ npm run dev
 ## 🎥 Demo Video
 
 Check out our live demo! 🎬👇 <br>
-https://drive.google.com/file/d/1wHcfgRlMW4Fba8zZ8qNfQfwBclem8idK/view?usp=sharing
 <a href="https://drive.google.com/file/d/1wHcfgRlMW4Fba8zZ8qNfQfwBclem8idK/view?usp=sharing">
 <img src="https://github.com/Sneha-p1/CrowdMint_Project/blob/main/Project/Frontend/src/assets/Images/Thumbnail.png" width='500'/>
 </a>
