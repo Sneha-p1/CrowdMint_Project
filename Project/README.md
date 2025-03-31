@@ -25,8 +25,8 @@ The CrowdMint DApp enables users to:
 
 ### Clone the Project and change into the directory
 ```html
-git clone https://github.com/Sneha-p1/Certificate_DApp.git
-cd Certificate_DApp
+git clone https://github.com/Sneha-p1/CrowdMint_Project.git
+cd CrowdMint_Project
 ```
 ### Install dependencies
 ```html
